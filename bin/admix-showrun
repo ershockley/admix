@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+from argparse import ArgumentParser
+from admix.showrun import showrun
+
+def main():
+    parser = ArgumentParser("admix-showrun")
+
+    parser.add_argument("number", nargs='?', help="Run number or DID to show", default="")
+    parser.add_argument("--dtypes", nargs="*", help="Restricts infos on the given data types")
+    parser.add_argument("--to", type=int, help="Shows runs from the run number up to this value", default=0)
+    parser.add_argument("--compact", help="Just list few DB infos as run number, status, date, comments", action='store_true')
+    parser.add_argument("--status", help="Just list the run name and its global status", action='store_true')
+    parser.add_argument("--pending", help="Shows only pending data types", action='store_true')
+    parser.add_argument("--json", help="Dumps the whole DB rundoc in pretty style", action='store_true')
+    parser.add_argument("--latest", type=int, help="Shows latest runs", default=0)
+
+    args = parser.parse_args()
+
+    if args.dtypes:
+        dtypes = args.dtypes
+    else:
+        dtypes = []
+
+    try:
+        showrun(args.number,args.to,dtypes,args.compact,args.json,args.status,args.latest,args.pending)
+    except KeyboardInterrupt:
+        return 0
+
+
+if __name__ == "__main__":
+    main()
