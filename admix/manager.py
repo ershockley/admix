@@ -7,7 +7,7 @@ import tempfile
 
 from packaging import version
 from tqdm import tqdm
-import rucio.common.exception
+from rucio.common.exception import DataIdentifierNotFound
 
 import admix.rucio
 from . import rucio, logger
@@ -94,8 +94,12 @@ def synchronize(run_number, dtype=None):
         base_dict['status'] = None
 
         db_rses = [d['location'] for d in copies]
-        rucio_rules = rucio.list_rules(did)
-        rucio_rses = [r['rse_expression'] for r in rucio_rules]
+        try:
+            rucio_rules = rucio.list_rules(did)
+            rucio_rses = [r['rse_expression'] for r in rucio_rules]
+        except DataIdentifierNotFound:
+            rucio_rses = []
+
         # check for dupicate entries in the runDB
         duplicated_rses = []
         if len(db_rses) != len(set(db_rses)):
@@ -266,8 +270,9 @@ def find_outdated_data(max_straxen_version, specific_dtype=None, context='xenonn
                                                   'did': {'$regex': h}}}}
                          for h in hsh_list]
                  }
-        cursor = list(utils.xent_runs_collection.find(query, {'number': 1, 'data': 1}))
-        if len(cursor) > 0:
+        ndocs = utils.xent_runs_collection.count_documents(query)
+        if ndocs > 0:
+            cursor = utils.xent_runs_collection.find(query, {'number': 1, 'data': 1})
             if dtype not in outdated_dids:
                 outdated_dids[dtype] = list()
             for run in cursor:
@@ -373,7 +378,7 @@ def clean_local_dir(path, before_straxen_version, ensure_rucio=False, dry_run=Tr
                 rules = admix.rucio.get_rses(did, state="OK")
                 if not len(rules):
                     continue
-            except rucio.common.exception.DataIdentifierNotFound:
+            except DataIdentifierNotFound:
                 continue
 
         if dry_run:
