@@ -293,8 +293,11 @@ def get_size_mb(did):
             raise ValueError(f"did must be a string (or an iterable of strings). You passed a {type(did)}")
         scope, name = did.split(':')
         total_size = 0
-        for f in clients.rucio_client.list_files(scope, name):
-            total_size += int(f['bytes'])/1e6
+        try:
+            for f in clients.rucio_client.list_files(scope, name):
+                total_size += int(f['bytes'])/1e6
+        except rucio.common.exception.DataIdentifierNotFound:
+            pass
     return total_size
 
 
