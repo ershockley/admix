@@ -23,7 +23,7 @@ setup(
     long_description=readme + '\n\n' + history,
     url='https://github.com/XENON1T/admix',
     install_requires=requirements,
-    scripts=['bin/admix-download'],
+    scripts=['bin/admix-download','bin/admix-showrun'],
     packages=find_packages(),
     license="BSD license",
     zip_safe=False,
